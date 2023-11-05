@@ -298,7 +298,7 @@ calcentry(const char * s, double * result)
       memset(tokv[i], 0, strlen(tokv[i]));
     }
 
-    if (isspace(*s))
+    if (isspace(*s) || isblank(*s) || iscntrl(*s))
       ; /* Ignore whitespace */
 
     else if (isdigit(*s))
