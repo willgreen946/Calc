@@ -238,7 +238,9 @@ parseexpr(const char ** argv)
         return 0;
       }
 
-      /* Attempt to convert string to a double */
+      /*
+       * Convert the string to a double
+       */
       if (pushd((double)strtod(*argv, (char**)NULL)))
         return 0;
 
@@ -270,12 +272,15 @@ int
 calcentry(const char * s, double * result)
 {
   int i, k;
-  char ** tokv = (char**)malloc(TOTAL_STACK_MAX*2); 
+  char ** tokv;
+
+  tokv = (char**)malloc(TOTAL_STACK_MAX*2); 
 
   if (!tokv)
     err(EXIT_FAILURE, "tokv malloc");
 
   memset(tokv, 0, TOTAL_STACK_MAX*2);
+
   tokv[0] = strndup("NONVALUE", 9);
 
   i = 1;
@@ -299,29 +304,37 @@ calcentry(const char * s, double * result)
     else if (isdigit(*s))
       strncat(tokv[i], s, 1);
 
-    /* Treat it as part of a number */
+    /*
+     * Treat decimals as part of a number
+     */
     else if (*s == '.')
       strncat(tokv[i], s, 1);
 
-    /* Check for negative numbers */
-    else if (*s == '-') {
-      for (k = 1; isspace(*s-k); k++)
+    /*
+     * Check for negative numbers
+     */
+    else if (*s == '-' && isdigit(*s+1)) {
+      for (k = 0; isspace(*s-k); k++)
         ;
 
-      /* Treat the char as an operator 
-       * if there is no number before it */
-      if (!isdigit((*s-k)) || !*s-k) {
+      /*
+       * Treat the char as an operator 
+       * if there is a number before it
+       */
+      if (isdigit((*s-k))) {
         tokv[++i] = strndup(s, 1);
         i++;
       }
 
-      else {
+      else
         strncat(tokv[i], s, 1);
-      }
     }
 
+    /*
+     * If all other checks fail,
+     * Treat the char as an operator
+     */
     else {
-      /* treat the char as an operator */
       tokv[++i] = strndup(s, 1);
       i++;
     }
@@ -330,9 +343,10 @@ calcentry(const char * s, double * result)
 
   *result = parseexpr((const char**)tokv);
 
-  /* Free memory in tokv */
-  for (i = 0; tokv[i]; i++)
+  for (i = 0; tokv[i]; i++) {
+    puts(tokv[i]);
     free((char*)tokv[i]);
+  }
 
   free((char**)tokv);
   return EXIT_SUCCESS;
